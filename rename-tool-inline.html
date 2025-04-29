@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>内联重命名工具</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 10px;
+      margin: 0;
+      background-color: #f5f5f5;
+    }
+    
+    .container {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 15px;
+      background-color: #fff;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    select, input, button {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    
+    button {
+      background-color: #673AB7;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    
+    button:hover {
+      background-color: #5e35b1;
+    }
+    
+    .result {
+      margin-top: 10px;
+      padding: 8px;
+      border-radius: 4px;
+      display: none;
+    }
+    
+    .success {
+      background-color: #dff0d8;
+      color: #3c763d;
+      border: 1px solid #d6e9c6;
+    }
+    
+    .error {
+      background-color: #f2dede;
+      color: #a94442;
+      border: 1px solid #ebccd1;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <select id="states-select">
+      <option value="">- 选择要重命名的状态 -</option>
+    </select>
+    
+    <input type="text" id="new-name" placeholder="输入新的状态名称">
+    
+    <button id="rename-btn">重命名状态</button>
+    
+    <div id="result" class="result"></div>
+  </div>
+  
+  <script>
+    // 加载保存的状态到下拉菜单
+    function loadSavedStates() {
+      const select = document.getElementById('states-select');
+      select.innerHTML = '<option value="">- 选择要重命名的状态 -</option>';
+      
+      // 获取保存的状态
+      const savedStates = JSON.parse(localStorage.getItem('savedStates') || '[]');
+      
+      if (savedStates.length === 0) {
+        select.innerHTML += '<option disabled>没有已保存的状态</option>';
+        return;
+      }
+      
+      // 按时间排序（最新的在前面）
+      savedStates.sort((a, b) => b.timestamp - a.timestamp);
+      
+      // 添加每个状态作为选项
+      savedStates.forEach(state => {
+        const option = document.createElement('option');
+        option.value = state.id;
+        option.textContent = state.name;
+        select.appendChild(option);
+      });
+    }
+    
+    // 显示结果消息
+    function showResult(message, isSuccess) {
+      const resultDiv = document.getElementById('result');
+      resultDiv.textContent = message;
+      resultDiv.style.display = 'block';
+      
+      if (isSuccess) {
+        resultDiv.className = 'result success';
+      } else {
+        resultDiv.className = 'result error';
+      }
+      
+      // 3秒后自动隐藏
+      setTimeout(() => {
+        resultDiv.style.display = 'none';
+      }, 3000);
+    }
+    
+    // 重命名状态
+    function renameState() {
+      const select = document.getElementById('states-select');
+      const newNameInput = document.getElementById('new-name');
+      
+      const selectedId = select.value;
+      const newName = newNameInput.value.trim();
+      
+      if (!selectedId) {
+        showResult('请先选择一个状态!', false);
+        return;
+      }
+      
+      if (!newName) {
+        showResult('请输入新的状态名称!', false);
+        return;
+      }
+      
+      // 获取保存的状态
+      let savedStates = JSON.parse(localStorage.getItem('savedStates') || '[]');
+      const stateIndex = savedStates.findIndex(state => state.id === selectedId);
+      
+      if (stateIndex === -1) {
+        showResult('找不到所选状态，可能已被删除!', false);
+        loadSavedStates(); // 重新加载状态列表
+        return;
+      }
+      
+      // 保存原始名称用于显示
+      const originalName = savedStates[stateIndex].name;
+      
+      // 更新状态名称
+      savedStates[stateIndex].name = newName;
+      
+      // 保存到localStorage
+      localStorage.setItem('savedStates', JSON.stringify(savedStates));
+      
+      // 显示成功消息
+      showResult(`已成功将状态 "${originalName}" 重命名为 "${newName}"!`, true);
+      
+      // 重新加载状态列表
+      loadSavedStates();
+      
+      // 清空输入框
+      newNameInput.value = '';
+      
+      // 通知父窗口更新
+      try {
+        // 尝试调用父窗口的更新函数
+        if (typeof parent.updateSavedStatesDropdown === 'function') {
+          parent.updateSavedStatesDropdown();
+        }
+      } catch (e) {
+        console.error('通知父窗口更新失败:', e);
+      }
+    }
+    
+    // 绑定事件
+    document.getElementById('rename-btn').addEventListener('click', renameState);
+    
+    // 初始加载
+    document.addEventListener('DOMContentLoaded', loadSavedStates);
+  </script>
+</body>
+</html> 

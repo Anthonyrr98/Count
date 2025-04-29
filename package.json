@@ -1,0 +1,25 @@
+{
+  "name": "count",
+  "version": "1.0.0",
+  "description": "一个具有记忆功能的计数器应用",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "package-win": "electron-packager . 计数器 --platform=win32 --arch=x64 --out=dist --asar --overwrite",
+    "package-mac": "electron-packager . 计数器 --platform=darwin --arch=x64 --out=dist --asar --overwrite",
+    "package-linux": "electron-packager . 计数器 --platform=linux --arch=x64 --out=dist --asar --overwrite",
+    "package-all": "electron-packager . 计数器 --all --out=dist --asar --overwrite"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^25.3.1",
+    "electron-packager": "^17.1.2"
+  },
+  "dependencies": {
+    "chart.js": "^4.4.9",
+    "html2canvas": "^1.4.1"
+  }
+}

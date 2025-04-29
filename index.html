@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>计数器应用</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      height: 100vh;
+    }
+    
+    .sidebar {
+      width: 250px;
+      background-color: #f0f0f0;
+      padding: 20px;
+      border-right: 1px solid #ddd;
+      overflow-y: auto;
+    }
+    
+    .main-content {
+      flex-grow: 1;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      overflow-y: auto;
+    }
+    
+    h1 {
+      margin-top: 0;
+      color: #333;
+    }
+    
+    .counter-item {
+      background-color: #fff;
+      border-radius: 8px;
+      padding: 10px;
+      margin-bottom: 10px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      transition: transform 0.2s;
+    }
+    
+    .counter-item:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+    
+    .counter-item h3 {
+      margin-top: 0;
+      margin-bottom: 10px;
+    }
+    
+    .counter-controls {
+      display: flex;
+      align-items: center;
+    }
+    
+    input.counter-value {
+      font-size: 1.2em;
+      margin: 0 10px;
+      text-align: center;
+      width: 60px;
+      padding: 2px 5px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+      opacity: 1;
+    }
+    
+    button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background-color 0.3s;
+    }
+    
+    button:hover {
+      background-color: #45a049;
+    }
+    
+    button.decrement {
+      background-color: #f44336;
+    }
+    
+    button.decrement:hover {
+      background-color: #d32f2f;
+    }
+    
+    button.chart-btn {
+      background-color: #2196F3;
+      margin-top: 20px;
+    }
+    
+    button.chart-btn:hover {
+      background-color: #0b7dda;
+    }
+    
+    .add-counter {
+      margin-top: 20px;
+      padding: 10px;
+    }
+    
+    input {
+      padding: 5px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      margin-right: 5px;
+    }
+    
+    .counter-details {
+      margin-top: 30px;
+      font-size: 24px;
+      text-align: center;
+      width: 100%;
+    }
+    
+    .selected {
+      background-color: #e3f2fd;
+    }
+    
+    .chart-container {
+      width: 95%;
+      margin-top: 40px;
+      margin-bottom: 40px;
+      display: none;
+      background-color: #fff;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .chart-title {
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    
+    .chart-bars {
+      position: relative;
+      margin-top: 20px;
+      width: 100%;
+    }
+    
+    .bar-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+    
+    .bar-value {
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    
+    .bar {
+      background-color: rgba(54, 162, 235, 0.7);
+      border: 1px solid rgba(54, 162, 235, 1);
+      border-radius: 4px 4px 0 0;
+      width: 40px;
+      transition: height 0.3s;
+      margin-bottom: 0;
+    }
+    
+    .bar-label {
+      margin-top: 10px;
+      max-width: 100px;
+      word-break: break-word;
+      font-size: 14px;
+    }
+
+    .scale-container {
+      color: #666;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <h1>计数器列表</h1>
+    <div id="counters-list"></div>
+    
+    <div class="add-counter">
+      <input id="new-counter-name" type="text" placeholder="新计数器名称">
+      <button id="add-counter-btn">添加</button>
+    </div>
+    
+    <button id="show-chart-btn" class="chart-btn">显示统计图表</button>
+    
+    <div style="margin-top: 20px;">
+      <button id="export-data-btn" class="chart-btn">导出数据</button>
+      <button id="import-data-btn" class="chart-btn" style="margin-top: 10px;">导入数据</button>
+      <button id="save-state-btn" class="chart-btn" style="margin-top: 10px; background-color: #4CAF50;">保存当前状态</button>
+      <button id="new-list-btn" class="chart-btn" style="margin-top: 10px; background-color: #607D8B;">新建计数器列表</button>
+      
+      <div style="margin-top: 20px;">
+        <select id="saved-states-select" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ddd;">
+          <option value="">- 选择已保存的状态 -</option>
+        </select>
+        <div style="display: flex; margin-bottom: 10px; justify-content: flex-end;">
+          <button onclick="if(typeof updateSavedStatesDropdown === 'function') updateSavedStatesDropdown();" class="chart-btn" style="margin: 0; padding: 3px 8px; font-size: 12px; background-color: #2196F3;">
+            <span title="刷新列表">🔄</span>
+          </button>
+        </div>
+        <div style="display: flex; margin-top: 10px; gap: 5px;">
+          <button id="load-state-btn" class="chart-btn" style="flex: 1; margin-top: 0; background-color: #FF9800;">加载</button>
+          <button id="delete-state-btn" class="chart-btn" style="flex: 1; margin-top: 0; background-color: #F44336;">删除</button>
+        </div>
+        
+        <!-- 重命名状态区域 -->
+        <div style="margin-top: 10px;">
+          <button id="toggle-rename-btn" class="chart-btn" style="width: 100%; background-color: #673AB7;" onclick="toggleRenameToolIframe()">
+            展开重命名工具
+          </button>
+          
+          <div id="rename-tool-container" style="margin-top: 10px; display: none;">
+            <iframe id="rename-tool-iframe" src="rename-tool-inline.html" style="width: 100%; height: 180px; border: none; overflow: hidden;"></iframe>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="main-content">
+    <div class="counter-details" id="counter-details">
+      请从左侧选择或添加一个计数器
+    </div>
+    
+    <div class="chart-container" id="chart-container">
+      <div style="display: flex; justify-content: flex-end; margin-bottom: 10px;">
+        <button id="export-chart-btn" class="chart-btn" style="margin-top: 0;">导出图表</button>
+      </div>
+      <div id="chart-bars"></div>
+    </div>
+  </div>
+
+  <script>
+    // 在渲染进程中加载html2canvas库
+    window.html2canvas = require('html2canvas');
+    
+    // 确保页面完全加载后绑定事件
+    window.addEventListener('load', function() {
+      console.log('页面完全加载');
+    });
+  </script>
+  <script src="renderer.js"></script>
+</body>
+</html> 

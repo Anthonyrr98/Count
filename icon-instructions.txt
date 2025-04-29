@@ -1,0 +1,11 @@
+请先准备一个icon.ico图标文件放在当前目录下作为应用程序图标。
+
+您可以通过以下方式获取图标：
+1. 可以使用在线工具将PNG或JPG图片转换为ICO格式，如：https://convertio.co/zh/png-ico/
+2. 使用图标编辑软件创建图标
+3. 从网上下载免费图标并转换为ICO格式
+
+图标大小建议使用256x256像素以获得最佳效果。
+
+如果没有图标文件，可以修改package.json中的打包命令，移除--icon=icon.ico参数：
+"package-win": "electron-packager . 计数器 --platform=win32 --arch=x64 --out=dist --asar --overwrite" 
